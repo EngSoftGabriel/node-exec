@@ -1,53 +1,51 @@
-import { fastify } from 'fastify'
-import { DatabaseMemory } from './database-memory.js'
+import { fastify } from "fastify";
+import { DatabaseMemory } from "./database-memory.js";
 
-const server = fastify()
+const server = fastify();
 
-const database = new DatabaseMemory()
+const database = new DatabaseMemory();
 
+server.post("/videos", (request, reply) => {
+  const { title, description, duration } = request.body;
 
-server.post('/videos', (request, reply) => {
-    const { title, description, duration } = request.body
+  database.create({
+    title,
+    description,
+    duration,
+  });
 
+  return reply.status(201).send();
+});
 
-    database.create({
-        title,
-        description,
-        duration,
-    })
+server.get("/videos", (request) => {
+  const search = request.query.search;
 
-    return reply.status(201).send()
-})
+  const videos = database.list(search);
 
-server.get('/videos', () => {
-    const videos = database.list()
+  return videos;
+});
 
-    console.log(videos)
+server.put("/videos/:id", (request, reply) => {
+  const videoId = request.params.id;
+  const { title, description, duration } = request.body;
 
-    return videos
-})
+  database.update(videoId, {
+    title,
+    description,
+    duration,
+  });
 
-server.put('/videos/:id', (request, reply) => {
-    const videoId = request.params.id 
-    const { title, description, duration } = request.body
+  return reply.status(204).send();
+});
 
-    database.update(videoId, {
-        title,
-        description,
-        duration,
-    })
+server.delete("/videos/:id", (request, reply) => {
+  const videoId = request.params.id;
 
-    return reply.status(204).send()
-})
+  database.delete(videoId);
 
-server.delete('/videos/:id', (request, reply) => {
-    const videoId = request.params.id 
-
-    database.delete(videoId)
-
-    return reply.status(204).send()
-})
+  return reply.status(204).send();
+});
 
 server.listen({
-    port: 3333,
-})
+  port: 3333,
+});
